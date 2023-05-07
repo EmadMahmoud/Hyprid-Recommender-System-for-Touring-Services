@@ -3,10 +3,10 @@ import os
 script_directory = os.path.dirname(os.path.abspath(__file__))
 
 #sys.path.append(os.path.abspath('./data'))
-sys.path.append(os.path.join(script_directory,'./../data'))
+sys.path.append(os.path.join(script_directory, '../data'))
 sys.path.append(os.path.join(script_directory,'./../model'))
 
-from Data import Data
+from data import Data
 from Evaluator import Evaluator
 from surprise import KNNWithMeans, NormalPredictor, SVDpp
 from ContentKnn import ContentKnn

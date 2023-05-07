@@ -8,6 +8,7 @@ from scipy.sparse import hstack
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
+
 class ContentKnn(AlgoBase):
     def __init__(self, items, k = 40):
         AlgoBase.__init__(self)
@@ -84,7 +85,7 @@ class ContentKnn(AlgoBase):
 
         return self.similarityMatrix[item1_sim_idx, item2_sim_idx]
     
-    def get_neighbors(self,u, i, k = 40, user_ratings_dict = {}):
+    def get_neighbors(self, u, i, k=40, user_ratings_dict = {}):
         '''
         given a user (unknown / known) and a known item it gets the most similar items from the items
         that the user has rate to the given item

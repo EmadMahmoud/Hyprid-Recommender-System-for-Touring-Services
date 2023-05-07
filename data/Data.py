@@ -5,7 +5,7 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(script_directory,'./..'))
 
 import csv
-import pandas as pd 
+import pandas as pd
 
 from surprise import Dataset
 from surprise import Reader
@@ -14,6 +14,7 @@ from utils import Env
 from collections import defaultdict
 
 import os
+
 
 class Data:
     def __init__(self):
@@ -50,10 +51,12 @@ class Data:
                 id, name = record[1], record[2]
                 self.itemId_to_name[id] = name
                 self.itemName_to_id[name] = id
+
     def _load_items_features(self):
         self.items = pd.read_csv(self.items_path, index_col=0)
         self.itemsSubcategories = list(set(cat for item in self.items['subcategory'].tolist() for cat in item.split('|')))
         self.itemsSubtypes = list(set(cat for item in self.items['subtype'].tolist() for cat in item.split('|')))
+
     def _load_ratings_df(self):
         self.ratings_dataframe = pd.read_csv(self.ratings_path)
         self.ratings_dataframe = self.ratings_dataframe.drop(['timestamp'], axis=1)

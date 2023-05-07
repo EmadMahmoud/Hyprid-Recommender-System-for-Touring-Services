@@ -4,6 +4,7 @@ from surprise import SVDpp
 import pandas as pd
 from surprise import AlgoBase
 
+
 class SVDKNNBaseline(AlgoBase):
     
     def __init__(self, ratings_df):
@@ -26,7 +27,7 @@ class SVDKNNBaseline(AlgoBase):
 
     def _generate_ratings_matrix(self, ratins_df):
         '''
-        given a Dataframe of ratings it convert to matrix of (users,items)
+        given a Dataframe of ratings it converts to matrix of (users,items)
         Args:
             ratins_df: (np.array) of tuples of the form (userId, itemId, rating)
         Returns:
@@ -35,7 +36,7 @@ class SVDKNNBaseline(AlgoBase):
 
         self.users_ratings_matrix = pd.DataFrame(columns=self.all_items)
         for r in ratins_df.iterrows():
-            self.users_ratings_matrix.loc[r[1]['user'],r[1]['item']] = r[1]['rating']
+            self.users_ratings_matrix.loc[r[1]['user'], r[1]['item']] = r[1]['rating']
 
         self.users_ratings_matrix = self.users_ratings_matrix.fillna(0)
         
@@ -74,19 +75,19 @@ class SVDKNNBaseline(AlgoBase):
     
     def _generate_biases(self):
         '''
-        uses the train data to generate the bias from the baselin for each user in the trainset
+        uses the train data to generate the bias from the baseline for each user in the trainset
         '''
         # Calculate the mean rating of all users and items
-        self.global_mean = np.nanmean( self.users_ratings_matrix.replace(0, np.NaN).values)
-        users_means = np.array(np.nanmean( self.users_ratings_matrix.replace(0, np.NaN), axis=1))
-        items_means = np.array(np.nanmean( self.users_ratings_matrix.replace(0, np.NaN), axis=0))
+        self.global_mean = np.nanmean(self.users_ratings_matrix.replace(0, np.NaN).values)
+        users_means = np.array(np.nanmean(self.users_ratings_matrix.replace(0, np.NaN), axis=1))
+        items_means = np.array(np.nanmean(self.users_ratings_matrix.replace(0, np.NaN), axis=0))
 
         # Calculate the user bias and item bias
         self.users_bias = users_means - self.global_mean
     
     def estimate(self, u, i):
         '''
-        given an inner user id  and inner item id it predict the rating the user may give to the item
+        given an inner user id  and inner item id it predicts the rating the user may give to the item
         Args:
             u: (int) user inner id
             i: (int) item inner id
@@ -97,7 +98,7 @@ class SVDKNNBaseline(AlgoBase):
     
     def predict(self, u, i):
         '''
-        given a user raw id and item it predict the ratings that the user may give to the item
+        given a user raw id and item it predicts the ratings that the user may give to the item
         Args:
             u: (int|str) user id
             item_id: (int|dtr) the id of the new item
@@ -117,7 +118,7 @@ class SVDKNNBaseline(AlgoBase):
             prediction: (float) users predicted rating to the item
         '''
         user_ratings_vector = self._generate_user_ratings_vector(user_ratings_dict)
-        k_neighbors = self.get_neighbors_data(user_ratings_vector, k = k)
+        k_neighbors = self.get_neighbors_data(user_ratings_vector, k=k)
 
         user_bias = np.array(np.nanmean(user_ratings_vector.replace(0, np.NaN), axis=1)) - self.global_mean
 
@@ -135,7 +136,7 @@ class SVDKNNBaseline(AlgoBase):
         prediction = neighbors_prediction + (((bias_difference / 5) * neighbors_prediction))
         return self._clip(prediction[0])
     
-    def _clip(self,val, lower = 0.0, upper = 5.0):
+    def _clip(self, val, lower=0.0, upper=5.0):
         '''
         given a number , upper bound, and lower bound it clip the number to be between the two bounds
         Args:
@@ -146,6 +147,6 @@ class SVDKNNBaseline(AlgoBase):
             clipped_val: (float) the number clipped
         '''
         clipped_val = min(val, upper)
-        clipped_val = max(clipped_val,lower)
+        clipped_val = max(clipped_val, lower)
 
         return clipped_val

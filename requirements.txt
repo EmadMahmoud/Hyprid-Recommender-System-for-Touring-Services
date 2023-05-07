@@ -1,4 +1,5 @@
-scikit-surprise
 scikit-learn
+scikit-surprise
 numpy
 pandas
+python-dotenv

@@ -2,16 +2,17 @@ from RecommenderMetrics import RecommenderMetrics
 from EvaluationData import EvaluationData
 import gc
 
+
 class EvaluatedAlgorithm:
     def __init__(self, algorithm, name):
         self.algorithm = algorithm
         self.name = name
     
-    def evaluate(self, evaluationData, doTopN, n = 10, verbose = True):
+    def evaluate(self, evaluationData, doTopN, n=10, verbose=True):
         metrics = {}
         recommenderMetrics = RecommenderMetrics()
 
-        #Accuracy
+        # Accuracy
         if (verbose):
             print("Evaluating accuracy...")
         self.algorithm.fit(evaluationData.get_train_set())
@@ -19,7 +20,7 @@ class EvaluatedAlgorithm:
         metrics['RMSE'] = recommenderMetrics.RMSE(predictions)
         metrics['MAE'] = recommenderMetrics.MAE(predictions)
 
-        #Top N
+        # Top N
         if doTopN:
 
             # leave one out

@@ -3,6 +3,7 @@ import itertools
 from surprise import accuracy
 from collections import defaultdict
 
+
 class RecommenderMetrics:
 
     def __init__(self) -> None:
@@ -14,7 +15,7 @@ class RecommenderMetrics:
     def RMSE(self, predictions):
         return accuracy.rmse(predictions, verbose=False)
     
-    def get_top_N(self, predictions, n = 10, minimumRating = 0.4):
+    def get_top_N(self, predictions, n=10, minimumRating = 0.4):
         topN = defaultdict(list)
 
         for userId, itemId, actualRating, estimsatedRating, _ in predictions:

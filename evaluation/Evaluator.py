@@ -1,5 +1,7 @@
 from EvaluationData import EvaluationData
 from EvaluatedAlgorithm import EvaluatedAlgorithm
+
+
 class Evaluator:
 
     def __init__(self, dataset, rankings) :
