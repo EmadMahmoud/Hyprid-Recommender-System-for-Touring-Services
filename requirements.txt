@@ -3,3 +3,4 @@ scikit-surprise
 numpy
 pandas
 python-dotenv
+ortools
