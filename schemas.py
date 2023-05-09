@@ -3,11 +3,14 @@ from marshmallow.validate import Length, Range
 
 
 class MatchSchema(Schema):
-    place_id = fields.Integer(load_only=True, validate=Range(min=0))
+    place_id = fields.Str(load_only=True)
     user_dict = fields.Dict(
         keys=fields.Integer(),
-        values=fields.Decimal(validate=validate.Range(min=0, max=5)),
+        values=fields.Integer(validate=validate.Range(min=0, max=5)),
         load_only=True
     )
-    score = fields.Decimal(dump_only=True, validate=validate.Range(min=0, max=5))
-
+    score = fields.Dict(
+        keys=fields.Str(default="similarity"),
+        values=fields.Float(validate=validate.Range(min=0, max=5)),
+        dump_only=True
+    )
