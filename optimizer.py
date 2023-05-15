@@ -14,34 +14,63 @@ class optimizer:
             coordinates: (list) of tuples each indeicate the coordinates of the destinations to visit
             start: (int) the index of the place that is the start of the itinerary
             num_days: (int) number of days that the itinerary covers
-            location_diameter: (float) this will be used to generate a coordinates that approximate
-                                the boundaries of a circle around each location with this diameter
         Returns:
             itinerary: (list) of lists each represent the location to be visited in a single day
         '''
         self._generate_data_object(coordinates, num_days, start)
+        min_stops = 2
+        min_stops = min(min_stops if start >= 0 else min_stops + 1, (len(coordinates) // num_days) + 1)
+        max_stops = len(coordinates)
 
+        return self._vrp(start, min_stops=min_stops, max_stops=max_stops)
+
+    def _vrp(self, start, max_vehicle_capacity=9223372036854775807, min_stops=0, max_stops=1000):
+        '''
+        solves the vehicle routing problem
+        Args:
+            start: (int) the index of the place that is the start of the itinerary
+            max_vehicle_capacity: (int) the maximum capacity of all vehicles combined
+            min_stops: (int) the minimum numbers of cities each vehicle should visit
+            max_stops: (int) the maximum numbers of cities each vehicle should visit
+        Returns:
+            itinerary: (list) of lists each represent the location to be visited in a single day
+        '''
         # create routing model
         self.manager = pywrapcp.RoutingIndexManager(len(self.data_obj['distance_matrix']),
                                                     self.data_obj['num_vehicles'], self.data_obj['depot'])
         routing = pywrapcp.RoutingModel(self.manager)
 
+        # Add Counter Constrain
+        # set up the call back function
+        plus_one_callback_index = routing.RegisterUnaryTransitCallback(lambda index: 1)
+
+        dimension_name = 'Counter'
+        routing.AddDimension(
+            plus_one_callback_index,
+            0,  # null capacity slack
+            max_stops,  # vehicle maximum capacities
+            True,  # start cumul to zero
+            dimension_name)
+        counter_dimension = routing.GetDimensionOrDie(dimension_name)
+        for vehicle_id in range(self.data_obj['num_vehicles']):
+            index = routing.End(vehicle_id)
+            counter_dimension.CumulVar(index).SetRange(min_stops, max_stops)
+
+        # Add Distance constraint.
         # setup the get distance function to be the distance call back
         transit_callback_index = routing.RegisterTransitCallback(self._get_distance)
         routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-        # Add Distance constraint.
         dimension_name = 'Distance'
         routing.AddDimension(
             transit_callback_index,
             0,  # no slack
-            9223372036854775807,  # no maximum capacity (maximum capacity is the max value of int64)
+            max_vehicle_capacity,
             True,  # start cumul to zero
             dimension_name)
-        # routing.AddLimit(routing.solver(), self.data_obj['num_vehicles'], 1)
 
         distance_dimension = routing.GetDimensionOrDie(dimension_name)
-        distance_dimension.SetGlobalSpanCostCoefficient(100)
+        distance_dimension.SetGlobalSpanCostCoefficient(10000)
 
         # Setting first solution heuristic.
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
@@ -107,21 +136,22 @@ class optimizer:
         '''
         # construct distance matrix
         num_locations = len(coordinates)
+        distance_matrix = []
         if depot >= 0:
-            distance_matrix = [[0] * num_locations] * num_locations
             for i in range(num_locations):
-                for j in range(i, num_locations):
-                    distance = self._calculate_distance(coordinates[i], coordinates[j])
-                    distance_matrix[i][j] = distance
-                    distance_matrix[j][i] = distance
-
+                row = []
+                for j in range(num_locations):
+                    distance = int(self._calculate_distance(coordinates[i], coordinates[j]) * 10)
+                    row.append(distance)
+                distance_matrix.append(row)
         else:  # choose arbitary start
-            distance_matrix = [[0] * (num_locations + 1)] * (num_locations + 1)
+            distance_matrix.append([0] * (num_locations + 1))
             for i in range(num_locations):
-                for j in range(i, num_locations):
-                    distance = self._calculate_distance(coordinates[i], coordinates[j])
-                    distance_matrix[i + 1][j + 1] = distance
-                    distance_matrix[j + 1][i + 1] = distance
+                row = [0]
+                for j in range(num_locations):
+                    distance = int(self._calculate_distance(coordinates[i], coordinates[j]) * 10)
+                    row.append(distance)
+                distance_matrix.append(row)
 
         # build data object
         data_obj = {}
@@ -145,7 +175,7 @@ class optimizer:
 
         return self.data_obj['distance_matrix'][from_node][to_node]
 
-    def generate_location_box(p, d):
+    def generate_location_box(self, p, d):
         """
         Calculates the bounding box of a location given its latitude, longitude,
         and a distance in kilometers.
@@ -195,3 +225,12 @@ class optimizer:
         loc_box['max_lat'] = max(math.degrees(lat1), math.degrees(lat2), math.degrees(lat3), math.degrees(lat4))
 
         return loc_box
+
+
+# op = optimizer()
+# print(op.genrate_itinerary([[27.96299, 34.36474], [27.98149, 34.38089], [27.89931, 34.30218], [27.96069, 34.30533],
+#                             (28.36216, 36.50579), (27.91667, 34.33197), (27.96273, .36698)], start=4, num_days=4))
+
+# op = optimizer()
+# location = [32.63156, 25.68673]
+# print(op.generate_location_box(location, 5.1))
