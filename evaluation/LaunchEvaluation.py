@@ -4,7 +4,7 @@ script_directory = os.path.dirname(os.path.abspath(__file__))
 
 #sys.path.append(os.path.abspath('./data'))
 sys.path.append(os.path.join(script_directory, '../data'))
-sys.path.append(os.path.join(script_directory,'./../model'))
+sys.path.append(os.path.join(script_directory, './../model'))
 
 from data import Data
 from Evaluator import Evaluator
