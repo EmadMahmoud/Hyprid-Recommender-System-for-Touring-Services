@@ -8,3 +8,4 @@ python-dotenv
 scikit_learn
 scikit_surprise
 scipy
+gunicorn
