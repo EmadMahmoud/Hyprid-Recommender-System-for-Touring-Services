@@ -60,7 +60,8 @@ class Recommendations(MethodView):
                     id_filter.append(i[0])
 
             top_n = model.get_top_N(rec_data["user_dict"], id_filter)
-            return jsonify({'Top_N Recommendations': top_n}), 200
+            result = {item[0]: item[1] for item in top_n}
+            return jsonify({'Top_N_Recommendations': result}), 200
         except:
             return jsonify({
                 "server_default": [
@@ -106,9 +107,12 @@ class MakeAI(MethodView):
         city_name: string.
         """
         try:
-            city = ai_data['city_name']
-            start_position = ai_data["start_position"]
-            num_days = ai_data["num_days"]
+            city = ai_data['city']
+
+            longitude = ai_data["longitude"]
+            latitude = ai_data["latitude"]
+            start_position = [longitude, latitude]
+            num_days = ai_data["days"]
             data = self.search_csv_for_substring('data/finalofthefinal_filtered.csv', 'location_string', city)
             ids = data["id"].tolist()
             if data.shape[0] > 50:
@@ -117,7 +121,7 @@ class MakeAI(MethodView):
                 id_filter = []
 
                 for i in attr:
-                    if i[1] > 50:
+                    if i[1] > 200: # will return 20 place with Alexandria
                         id_filter.append(i[0])
                 top_n = model.get_top_N(ai_data["user_dict"], id_filter)
             else:
@@ -148,7 +152,7 @@ class MakeAI(MethodView):
                             tempid.append(plan_ids[i])
                 updatedplan.append(tempid)
 
-            return jsonify({'The Plan': updatedplan}), 200
+            return jsonify({'plan': updatedplan}), 200
         except:
             return jsonify({"server_default": [[2706184, 16962913],
                                                [1725002, 13136186, 3838091],
@@ -172,8 +176,10 @@ class MakeManual(MethodView):
         """
         try:
             places_id = manual_data["places_id"]
-            start_position = manual_data["start_position"]
-            num_days = manual_data["num_days"]
+            longitude = manual_data["longitude"]
+            latitude = manual_data["latitude"]
+            start_position = [longitude, latitude]
+            num_days = manual_data["days"]
             if num_days > len(places_id):
                 return jsonify({"no plan": "make sure the amount of days you entered"
                                            " are less than the places you choose."}), 400
@@ -201,7 +207,7 @@ class MakeManual(MethodView):
                             tempid.append(places_id[i])
                 updatedplan.append(tempid)
 
-            return jsonify({'The Plan': updatedplan}), 200
+            return jsonify({'plan': updatedplan}), 200
         except:
             return jsonify({"server_default": [[2706184, 16962913],
                                                [1725002, 13136186, 3838091],
